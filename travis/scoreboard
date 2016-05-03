@@ -1,0 +1,3 @@
+#!/bin/bash
+# This is a dummy function that simply appends everything it gets to a result file
+echo "$@" >> tests/log/cmd.log

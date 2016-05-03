@@ -1,0 +1,29 @@
+{
+	"name" : "bigdisp/scoreboard",
+	"description" : "Scoreboard control class to be combined with raspberry pi c classes.",
+	"authors" : [{
+			"name" : "Martin Beckmann",
+			"email" : "gn#36@phpbb.de",
+			"role" : "Developer"
+		}
+	],
+	"support" : {
+		"issues" : "https://github.com/bigdisp/scoreboard-php-api/issues",
+		"wiki" : "https://github.com/bigdisp/scoreboard-hardware/wiki",
+		"source" : "https://github.com/bigdisp/scoreboard-php-api/"
+	},
+	"autoload" : {
+		"classmap" : [
+			"src/"
+		]
+	},
+	"keywords" : [
+		"hardware control",
+		"scoreboard"
+	],
+	"require-dev" : {
+		"phpunit/phpunit" : "*",
+		"phing/phing" : "2.14.*",
+		"squizlabs/php_codesniffer" : "2.6.*"
+	}
+}
