@@ -25,5 +25,9 @@
 		"phpunit/phpunit" : "*",
 		"phing/phing" : "2.14.*",
 		"squizlabs/php_codesniffer" : "2.6.*"
-	}
+	},
+	"require" : {
+		"php" : ">=5.3.10"
+	},
+	"license" : "MIT"
 }

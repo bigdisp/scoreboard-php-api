@@ -13,10 +13,124 @@ namespace bigdisp\scoreboard;
  */
 class scoreboard extends hwcontrol
 {
+	/** @var int */
 	protected $runs_home = 0;
+
+	/** @var int */
 	protected $runs_away = 0;
+
+	/** @var int */
 	protected $inning = 1;
+
+	/** @var bool */
 	protected $top = true;
+
+	/** @var int */
+	protected $outs = 0;
+
+	/** @var int */
+	protected $strikes = 0;
+
+	/** @var int */
+	protected $balls = 0;
+
+	/**
+	 * Blank count and add an out. If already at two outs, increment innings.
+	 */
+	public function batter_out()
+	{
+		$this->set_balls(0);
+		$this->set_strikes(0);
+		$this->out();
+	}
+
+	/**
+	 * Add an out. If already at two outs, increment inning and blank balls/strikes.
+	 */
+	public function out()
+	{
+		$this->outs += 1;
+
+		if ($this->outs > 2)
+		{
+			$this->outs = 0;
+			$this->set_balls(0);
+			$this->set_strikes(0);
+
+			if ($this->top)
+			{
+				$this->set_inning_bottom();
+			}
+			else
+			{
+				$this->set_inning_top();
+				$this->set_inning($this->inning + 1);
+			}
+		}
+
+		$this->set_outs($this->outs);
+	}
+
+	/**
+	 * Add one ball. If 4 balls are reached, blanks count.
+	 */
+	public function ball()
+	{
+		$this->balls += 1;
+		if ($this->balls > 3)
+		{
+			$this->set_strikes(0);
+		}
+
+		$this->set_balls($this->balls);
+	}
+
+	/**
+	 * Add one strike. If 3 strikes are reached, an out is added and the count is blanked.
+	 */
+	public function strike()
+	{
+		$this->strikes += 1;
+		if ($this->strikes > 2)
+		{
+			$this->set_balls(0);
+			$this->out();
+		}
+		$this->set_strikes($this->strikes);
+	}
+
+	/**
+	 * Set the number of balls. Forced to be a number between 0 and 3.
+	 *
+	 * @param int $balls
+	 */
+	public function set_balls($balls)
+	{
+		$this->balls = intval($balls) % 4;
+		$this->set_value('B', $this->balls);
+	}
+
+	/**
+	 * Set the number of strikes. Forced to be a number between 0 and 2.
+	 *
+	 * @param int $strikes
+	 */
+	public function set_strikes($strikes)
+	{
+		$this->strikes = intval($strikes) % 3;
+		$this->set_value('S', $this->strikes);
+	}
+
+	/**
+	 * Set the number of outs. Forced to be a number between 0 and 2.
+	 *
+	 * @param int $outs
+	 */
+	public function set_outs($outs)
+	{
+		$this->outs = intval($outs) % 3;
+		$this->set_value('O', $this->outs);
+	}
 
 	/**
 	 * Set the score that should currently be displayed.
@@ -88,6 +202,29 @@ class scoreboard extends hwcontrol
 			'home' => $this->runs_home,
 			'away' => $this->runs_away,
 		);
+	}
+
+	/**
+	 * Returns the currently set count.
+	 *
+	 * @return array
+	 */
+	public function get_count()
+	{
+		return array(
+			'balls' 	=> $this->balls,
+			'strikes' 	=> $this->strikes,
+		);
+	}
+
+	/**
+	 * returns the number of outs.
+	 *
+	 * @return int
+	 */
+	public function get_outs()
+	{
+		return $this->outs;
 	}
 
 	/**
