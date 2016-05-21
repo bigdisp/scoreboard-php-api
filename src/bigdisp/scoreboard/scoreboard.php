@@ -34,6 +34,19 @@ class scoreboard extends hwcontrol
 	/** @var int */
 	protected $balls = 0;
 
+	public function add_run()
+	{
+		if ($this->top)
+		{
+			$this->set_score($this->runs_home, $this->runs_away + 1);
+		}
+		else
+		{
+			$this->set_score($this->runs_home + 1, $this->runs_away);
+		}
+
+	}
+
 	/**
 	 * Blank count and add an out. If already at two outs, increment innings.
 	 */
@@ -42,6 +55,15 @@ class scoreboard extends hwcontrol
 		$this->set_balls(0);
 		$this->set_strikes(0);
 		$this->out();
+	}
+
+	/**
+	 * Blank count.
+	 */
+	public function batter_save()
+	{
+		$this->set_balls(0);
+		$this->set_strikes(0);
 	}
 
 	/**
