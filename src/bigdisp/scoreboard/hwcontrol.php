@@ -23,6 +23,9 @@ class hwcontrol
 	/** @var string */
 	protected $path = './scoreboard ';
 
+	/** @var int */
+	protected $brightness = -1;
+
 	const INTERFACE_CONSOLE = 1;
 	const INTERFACE_DAEMON = 2;
 
@@ -88,6 +91,7 @@ class hwcontrol
 	 */
 	public function pwm_level($level = 5)
 	{
+		$this->brightness = $level;
 		$this->cmd_pwm(intval($level));
 	}
 

@@ -34,17 +34,53 @@ class scoreboard extends hwcontrol
 	/** @var int */
 	protected $balls = 0;
 
-	public function add_run()
+	/** @var array */
+	protected $line_home  = array();
+
+	/** @var array */
+	protected $line_away = array();
+
+	public function add_run($subtract = false)
 	{
-		if ($this->top)
+		// Linescore
+		for ($inning = 1; $inning <= $this->inning; $inning++)
 		{
-			$this->set_score($this->runs_home, $this->runs_away + 1);
+			if (!isset($this->line_away[$inning]))
+			{
+				$this->line_away[$inning] = 0;
+			}
+			if (!isset($this->line_home[$inning]))
+			{
+				$this->line_home[$inning] = 0;
+			}
+		}
+
+		if ($subtract)
+		{
+			if ($this->top)
+			{
+				$this->set_score($this->runs_home, $this->runs_away - 1);
+				$this->line_away[$this->inning] -= 1;
+			}
+			else
+			{
+				$this->set_score($this->runs_home - 1, $this->runs_away);
+				$this->line_home[$this->inning] -= 1;
+			}
 		}
 		else
 		{
-			$this->set_score($this->runs_home + 1, $this->runs_away);
+			if ($this->top)
+			{
+				$this->set_score($this->runs_home, $this->runs_away + 1);
+				$this->line_away[$this->inning] += 1;
+			}
+			else
+			{
+				$this->set_score($this->runs_home + 1, $this->runs_away);
+				$this->line_home[$this->inning] += 1;
+			}
 		}
-
 	}
 
 	/**
@@ -121,6 +157,7 @@ class scoreboard extends hwcontrol
 		$this->set_strikes($this->strikes);
 	}
 
+
 	/**
 	 * Set the number of balls. Forced to be a number between 0 and 3.
 	 *
@@ -156,6 +193,7 @@ class scoreboard extends hwcontrol
 
 	/**
 	 * Set the score that should currently be displayed.
+	 * WARNING: Using this directly messes up the linescore!
 	 *
 	 * @param int $home
 	 * @param int $away
@@ -224,6 +262,31 @@ class scoreboard extends hwcontrol
 			'home' => $this->runs_home,
 			'away' => $this->runs_away,
 		);
+	}
+
+	/**
+	 * Returns the complete linescore
+	 */
+	public function get_linescore()
+	{
+		$linescore = array();
+		foreach ($this->line_home as $inning => $home)
+		{
+			$linescore[$inning] = array(
+				'home' => $home,
+				'away' => $this->line_away[$inning],
+				'inning' => $inning,
+			);
+		}
+		if (empty($linescore))
+		{
+			$linescore[1] = array(
+				'home' => 0,
+				'away' => 0,
+				'inning' => 1,
+			);
+		}
+		return $linescore;
 	}
 
 	/**
