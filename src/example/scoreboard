@@ -1,0 +1,426 @@
+#!/usr/bin/php
+<?php
+# Command line interface for controlling i2c
+
+class scoreboard_interface
+{
+
+	const C_ALL = 0;
+	const C_REDBLUE = 1;
+	const C_GREEN = 2;
+
+	const S_0 = 0;
+	const S_1 = 1;
+	const S_BOTH = 2;
+
+	protected $i2cset = '/usr/sbin/i2cset';
+
+	// Definitions
+	public $i2c_addr = array(
+		// Home
+		'RH' => 0x10,
+		'RH1' => 0x10,
+		'RH10' => 0x10,
+		// Away
+		'RG' => 0x11,
+		'RG1' => 0x11,
+		'RG10' => 0x11,
+		// Inning
+		'I' => 0x12,
+		'I1' => 0x12,
+		'I10' => 0x12,
+		// Balls, Strikes, Outs
+		'BSO' => 0x13,
+		// all
+		'broadcast' => array(
+			'RH',
+			'RG',
+			'I',
+			'BSO',
+		),
+	);
+
+	// Commands:
+	protected $cmd_ary = array(
+		'pwm_rb_s0' => 0x00,
+		'pwm_g_s0' => 0x01,
+		'pwm_rb_s1' => 0x02,
+		'pwm_g_s1' => 0x03,
+		
+		'pwm_off' => 0x04,
+		'pwm_on' => 0x05,
+
+		'print_num' => 0x06,
+		'second_digit' => 0x08,
+		'first_digit' => 0x07,
+
+		'bit_set_s0' => 0x09,
+		'bit_clear_s0' => 0x0A,
+		'bit_set_s1' => 0x0B,
+		'bit_clear_s1' => 0x0C,
+
+	);
+
+	protected $bitmask = array(
+		'A' => 1,
+		'B' => 2,
+		'C' => 4,
+		'D' => 8,
+		'E' => 16,
+		'F' => 32,
+		'G' => 64,
+		
+		//Balls
+		'B1' => 1,
+		'B2' => 2,
+		'B3' => 4,
+
+		//Strikes
+		'S1' => 8,
+		'S2' => 16,
+		
+		//Outs
+		'O1' => 32,
+		'O2' => 64,
+		
+		//Inning dots
+		// Don't wire these to B or C, otherwise innings >= 10 might cause problems
+		'IT' => 16, // Top
+		'IB' => 32, // Bottom
+	);
+
+	protected $ports = array(
+		'B1' => 0,
+		'B2' => 0,
+		'B3' => 0,
+		
+		'S1' => 0,
+		'S2' => 0,
+
+		'O1' => 0,
+		'O2' => 0,
+
+		'IT' => 1,
+		'IB' => 1,
+	);
+
+
+	protected function cmd($addr, $cmd, $hexval = -1)
+	{
+		if (!isset($this->cmd_ary[$cmd]))
+		{
+			fwrite(STDERR, "Error: Unknown command\n");
+			exit(1);
+		}
+		if (!isset($this->i2c_addr[$addr]))
+		{
+			fwrite(STDERR, "Error: Unknown device address.\n");
+			exit(2);
+		}
+
+		//Broadcast:
+		if ($addr == 'broadcast')
+		{
+			foreach ($this->i2c_addr[$addr] as $addr_i)
+			{
+				$this->cmd($addr_i, $cmd, $hexval);
+			}
+			return;
+		}
+
+		$add = '';
+		$cmd = $this->cmd_ary[$cmd];
+		$addr = $this->i2c_addr[$addr];
+		if ($hexval != -1)
+		{
+			if(strlen($hexval) > 4)
+			{
+				$add = " w";
+			}
+			system("$this->i2cset -y 1 $addr $cmd $hexval $add");
+			return;
+		}
+		system("$this->i2cset -y 1 $addr $cmd $add");
+	}
+
+	function pwm($value, $segment = scoreboard_interface::S_BOTH, $color = scoreboard_interface::C_ALL, $addr = "broadcast")
+	{
+		if ($color == scoreboard_interface::C_ALL)
+		{
+			$this->pwm($value, $segment, scoreboard_interface::C_REDBLUE, $addr);
+			$this->pwm($value, $segment, scoreboard_interface::C_GREEN, $addr);
+			return;
+		}
+		if ($segment == scoreboard_interface::S_BOTH)
+		{
+			$this->pwm($value, scoreboard_interface::S_0, $color, $addr);
+			$this->pwm($value, scoreboard_interface::S_1, $color, $addr);
+			return;
+		}
+		if (is_array($value) && $color == scoreboard_interface::C_REDBLUE)
+		{
+			$value = "0x" . dechex($value['r']) . dechex($value['b']);
+		}
+		else if (is_array($value) && $color == scoreboard_interface::C_GREEN)
+		{
+			$value = "0x" . dechex($value['g']);
+		}
+		if ($color == scoreboard_interface::C_REDBLUE)
+		{
+			return $this->cmd($addr, 'pwm_rb_s' . $segment, $value);
+		}
+		if ($color == scoreboard_interface::C_GREEN)
+		{
+			return $this->cmd($addr, 'pwm_g_s' . $segment, $value);
+		}
+		fwrite(STDERR, "Unknown pwm target\n");
+		exit(3);
+	}
+
+	function pwm_on($addr = 'broadcast')
+	{
+		$this->cmd($addr, 'pwm_on');
+	}
+	
+	function pwm_off($addr = 'broadcast')
+	{
+		$this->cmd($addr, 'pwm_off');
+	}
+
+	function color($hexval, $segment = S_BOTH, $addr = 'broadcast')
+	{
+		$rb = '0x' . $hexval[0] . $hexval[1] . $hexval[4] . $hexval[5];
+		$this->pwm($rb, $segment, C_REDBLUE, $addr);
+		$g  = '0x' . dechex(hexdec($hexval[2] . $hexval[3]) * 2);
+		$this->pwm($g, $segment, C_GREEN, $addr);
+	}
+
+	function write_number($number, $addr = 'broadcast')
+	{
+		$this->cmd($addr, 'print_num', $number);
+	}
+
+	function write_letters($letters, $addr = 'broadcast')
+	{
+		if (strlen($letters) < 2)
+		{
+			$letters = $letters[0] . $letters[0];
+		}
+		$this->cmd($addr, 'second_digit', ord($letters[0]));
+		$this->cmd($addr, 'first_digit', ord($letters[1]));
+	}
+
+	function write_letter($letter, $segment = scoreboard_interface::S_BOTH, $addr = 'broadcast')
+	{
+		if ($segment == scoreboard_interface::S_BOTH)
+		{
+			return $this->write_letters($letter[0] . $letter[0], $addr);
+		}
+		$this->cmd($addr, ($segment == scoreboard_interface::S_0 ? 'first_digit' : 'second_digit'), ord($letter[0]));
+	}
+
+	function balls($num_balls)
+	{
+		$this->cmd('BSO', 'bit_clear_s' . $this->ports['B1'], $this->bitmask['B1']);
+		$this->cmd('BSO', 'bit_clear_s' . $this->ports['B2'], $this->bitmask['B2']);
+		$this->cmd('BSO', 'bit_clear_s' . $this->ports['B3'], $this->bitmask['B3']);
+
+		if ($num_balls >= 1)
+		{
+			$this->cmd('BSO', 'bit_set_s' . $this->ports['B1'], $this->bitmask['B1']);
+		}
+		if ($num_balls >= 2)
+		{
+			$this->cmd('BSO', 'bit_set_s' . $this->ports['B2'], $this->bitmask['B2']);
+		}
+		if ($num_balls >= 3)
+		{
+			$this->cmd('BSO', 'bit_set_s' . $this->ports['B3'], $this->bitmask['B3']);
+		}
+	}
+
+	function strikes($num_strikes)
+	{
+		$this->cmd('BSO', 'bit_clear_s' . $this->ports['S1'], $this->bitmask['S1']);
+		$this->cmd('BSO', 'bit_clear_s' . $this->ports['S2'], $this->bitmask['S2']);
+
+		if ($num_strikes >= 1)
+		{
+			$this->cmd('BSO', 'bit_set_s' . $this->ports['S1'], $this->bitmask['S1']);
+		}
+		if ($num_strikes >= 2)
+		{
+			$this->cmd('BSO', 'bit_set_s' . $this->ports['S2'], $this->bitmask['S2']);
+		}
+	}
+
+	function outs($num_outs)
+	{
+		$this->cmd('BSO', 'bit_clear_s' . $this->ports['O1'], $this->bitmask['O1']);
+		$this->cmd('BSO', 'bit_clear_s' . $this->ports['O2'], $this->bitmask['O2']);
+
+		if ($num_outs >= 1)
+		{
+			$this->cmd('BSO', 'bit_set_s' . $this->ports['O1'], $this->bitmask['O1']);
+		}
+		if ($num_outs >= 2)
+		{
+			$this->cmd('BSO', 'bit_set_s' . $this->ports['O2'], $this->bitmask['O2']);
+		}
+	}
+
+	function blank_screen($addr = 'broadcast')
+	{
+		$this->write_letters('  ', $addr);
+	}
+}
+
+// Command Line Interpreter:
+$commands = array(
+	// Color(target, hexvalue)
+	'color' => 3,
+
+	'B' => 2,
+	'S' => 2,
+	'O' => 2,
+
+	// H(value)
+	'H' => 2,
+	'H1' => 2,
+	'H10' => 2,
+	'RH' => 2,
+	'RH1' => 2,
+	'RH10' => 2,
+
+	'G' => 2,
+	'G1' => 2,
+	'G10' => 2,
+	'RG' => 2,
+	'RG1' => 2,
+	'RG10' => 2,
+
+	'I' => 2,
+	'I1' => 2,
+	'I10' => 2,
+	
+	'blank' => 1,
+	'text' => 3,
+	'test' => 1,
+);
+if (!isset($argv[1]) || !isset($commands[$argv[1]]))
+{
+	fwrite(STDERR, "ERROR: Unknown command: $argv[1]\n");
+	exit(1);
+}
+if ($argc < $commands[$argv[1]])
+{
+	fwrite(STDERR, "ERROR: Too few arguments.\n");
+	exit(2);
+}
+
+$sb = new scoreboard_interface();
+
+$addr = $argv[1];
+$value = null;
+if (isset($argv[2]))
+{
+	$value = $argv[2];
+}
+
+switch ($argv[1])
+{
+	case 'color':
+		$target = $argv[2];
+		switch($argv[2])
+		{
+			case 'all':
+				$target = 'broadcast';
+				// no break!
+			case 'H':
+			case 'G':
+			case 'I':
+			case 'BSO':
+				$sb->color($argv[3], S_BOTH, $target);
+				break;
+			
+			case 'H1':
+			case 'G1':
+			case 'I1':
+			case 'BSO0':
+				$sb->color($argv[3], S_0, $target);
+				break;
+			case 'H10':
+			case 'G10':
+			case 'I10':
+			case 'BSO1':
+				$sb->color($argv[3], S_1, $target);
+				break;
+		}
+		break;
+	
+		//TODO: This depends on the cable attachments.
+		//		For this, it is useful to have a way to enable/disable
+		//		Single Output bits without touching the rest
+	case 'B':
+		$sb->balls($value);
+		break;
+	case 'S':
+		$sb->strikes($value);
+		break;
+	case 'O':
+		$sb->outs($value);
+		break;
+		
+	// Write complete numbers to digits (Home, Guest, Inning)
+	case 'H':
+	case 'RH':
+	case 'G':
+	case 'RG':
+	case 'I':
+		$sb->write_number($value, $addr);
+		break;
+
+	// Single Digit ASCII Symbol write:
+	case 'H1':	
+	case 'RH1':
+	case 'G1':
+	case 'RG1':
+	case 'I1':
+		$sb->write_letter($value, S_0, $addr);
+		break;
+	case 'I10':
+		if ($value > 1)
+		{
+			$value = 1;
+		}
+		// no break!		
+	case 'H10':
+	case 'RH10':
+	case 'G10':
+	case 'RG10':
+		$sb->write_letter($value, S_1, $addr);
+		break;
+	case 'blank':
+		$sb->blank_screen();
+	case 'text':
+		$sb->write_letters($argv[3], $argv[2]);
+	case 'test':
+		$sb->blank_screen();
+		fwrite(STDERR, "NOTICE: Testing 'write_number'\n");
+		for ($i = 0; $i < 100; $i += 11)
+		{
+			$sb->write_number($i);
+			sleep(1);
+		}
+		fwrite(STDERR, "NOTICE: Testing 'write_letters'\n");
+		$sb->write_letters('ab');
+		sleep(1);
+		$sb->write_letters('ba');
+		sleep(1);
+		fwrite(STDERR, "NOTICE: Testing 'write_letter'\n");
+		$sb->write_letter('c', scoreboard_interface::S_0);
+		$sb->write_letter('e', scoreboard_interface::S_1);
+		sleep(1);
+		$sb->blank_screen();
+}
+

@@ -12,7 +12,7 @@ include '../bigdisp/scoreboard/scoreboard_file.php';
 $filename = 'scoreboard_data.txt';
 
 /** @var $scoreboard \bigdisp\scoreboard\scoreboard_file */
-$scoreboard = new \bigdisp\scoreboard\scoreboard_file($filename);
+$scoreboard = new \bigdisp\scoreboard\scoreboard_file($filename, \bigdisp\scoreboard\hwcontrol::INTERFACE_CONSOLE);
 
 if (isset($_POST['score']))
 {

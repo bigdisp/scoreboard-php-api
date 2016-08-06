@@ -128,6 +128,7 @@ class hwcontrol
 		}
 		//Todo: eigentlichen Befehl einsetzen
 
+		echo $this->path . " " . $params;
 		if ($this->interface == hwcontrol::INTERFACE_CONSOLE)
 		{
 			system($this->path . ' ' . $params);

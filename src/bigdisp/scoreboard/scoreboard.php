@@ -205,13 +205,15 @@ class scoreboard extends hwcontrol
 
 		$rh10 = intval($home / 10);
 		$rh1  = intval($home % 10);
-		$this->set_value("RH1", $rh1);
-		$this->set_value("RH10", $rh10);
+		//$this->set_value("RH1", $rh1);
+		//$this->set_value("RH10", $rh10);
+		$this->set_value("RH", $home);
 
 		$rg10 = intval($away / 10);
 		$rg1  = intval($away % 10);
-		$this->set_value("RG1", $rg1);
-		$this->set_value("RG10", $rg10);
+		//$this->set_value("RG1", $rg1);
+		//$this->set_value("RG10", $rg10);
+		$this->set_value("RG", $away);
 	}
 
 	/**
@@ -225,8 +227,9 @@ class scoreboard extends hwcontrol
 
 		$i10 = intval($inning / 10);
 		$i1  = intval($inning % 10);
-		$this->set_value("I1", $i1);
-		$this->set_value("I10", $i10);
+		//$this->set_value("I1", $i1);
+		//$this->set_value("I10", $i10);
+		$this->set_value("I", $inning);
 	}
 
 	/**
