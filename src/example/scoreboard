@@ -18,10 +18,12 @@ class scoreboard_interface
 	// Definitions
 	public $i2c_addr = array(
 		// Home
+		'H' => 0x10,
 		'RH' => 0x10,
 		'RH1' => 0x10,
 		'RH10' => 0x10,
 		// Away
+		'G' => 0x11,
 		'RG' => 0x11,
 		'RG1' => 0x11,
 		'RG10' => 0x11,
@@ -46,7 +48,7 @@ class scoreboard_interface
 		'pwm_g_s0' => 0x01,
 		'pwm_rb_s1' => 0x02,
 		'pwm_g_s1' => 0x03,
-		
+
 		'pwm_off' => 0x04,
 		'pwm_on' => 0x05,
 
@@ -69,7 +71,7 @@ class scoreboard_interface
 		'E' => 16,
 		'F' => 32,
 		'G' => 64,
-		
+
 		//Balls
 		'B1' => 1,
 		'B2' => 2,
@@ -78,11 +80,11 @@ class scoreboard_interface
 		//Strikes
 		'S1' => 8,
 		'S2' => 16,
-		
+
 		//Outs
 		'O1' => 32,
 		'O2' => 64,
-		
+
 		//Inning dots
 		// Don't wire these to B or C, otherwise innings >= 10 might cause problems
 		'IT' => 16, // Top
@@ -93,7 +95,7 @@ class scoreboard_interface
 		'B1' => 0,
 		'B2' => 0,
 		'B3' => 0,
-		
+
 		'S1' => 0,
 		'S2' => 0,
 
@@ -138,6 +140,7 @@ class scoreboard_interface
 				$add = " w";
 			}
 			system("$this->i2cset -y 1 $addr $cmd $hexval $add");
+
 			return;
 		}
 		system("$this->i2cset -y 1 $addr $cmd $add");
@@ -181,18 +184,18 @@ class scoreboard_interface
 	{
 		$this->cmd($addr, 'pwm_on');
 	}
-	
+
 	function pwm_off($addr = 'broadcast')
 	{
 		$this->cmd($addr, 'pwm_off');
 	}
 
-	function color($hexval, $segment = S_BOTH, $addr = 'broadcast')
+	function color($hexval, $segment = scoreboard_interface::S_BOTH, $addr = 'broadcast')
 	{
 		$rb = '0x' . $hexval[0] . $hexval[1] . $hexval[4] . $hexval[5];
-		$this->pwm($rb, $segment, C_REDBLUE, $addr);
+		$this->pwm($rb, $segment, scoreboard_interface::C_REDBLUE, $addr);
 		$g  = '0x' . dechex(hexdec($hexval[2] . $hexval[3]) * 2);
-		$this->pwm($g, $segment, C_GREEN, $addr);
+		$this->pwm($g, $segment, scoreboard_interface::C_GREEN, $addr);
 	}
 
 	function write_number($number, $addr = 'broadcast')
@@ -302,7 +305,7 @@ $commands = array(
 	'I' => 2,
 	'I1' => 2,
 	'I10' => 2,
-	
+
 	'blank' => 1,
 	'text' => 3,
 	'test' => 1,
@@ -336,28 +339,30 @@ switch ($argv[1])
 			case 'all':
 				$target = 'broadcast';
 				// no break!
+			case 'RH':
 			case 'H':
+			case 'RG':
 			case 'G':
 			case 'I':
 			case 'BSO':
-				$sb->color($argv[3], S_BOTH, $target);
+				$sb->color($argv[3], scoreboard_interface::S_BOTH, $target);
 				break;
-			
+
 			case 'H1':
 			case 'G1':
 			case 'I1':
 			case 'BSO0':
-				$sb->color($argv[3], S_0, $target);
+				$sb->color($argv[3], scoreboard_interface::S_0, $target);
 				break;
 			case 'H10':
 			case 'G10':
 			case 'I10':
 			case 'BSO1':
-				$sb->color($argv[3], S_1, $target);
+				$sb->color($argv[3], scoreboard_interface::S_1, $target);
 				break;
 		}
 		break;
-	
+
 		//TODO: This depends on the cable attachments.
 		//		For this, it is useful to have a way to enable/disable
 		//		Single Output bits without touching the rest
@@ -370,7 +375,7 @@ switch ($argv[1])
 	case 'O':
 		$sb->outs($value);
 		break;
-		
+
 	// Write complete numbers to digits (Home, Guest, Inning)
 	case 'H':
 	case 'RH':
@@ -381,24 +386,24 @@ switch ($argv[1])
 		break;
 
 	// Single Digit ASCII Symbol write:
-	case 'H1':	
+	case 'H1':
 	case 'RH1':
 	case 'G1':
 	case 'RG1':
 	case 'I1':
-		$sb->write_letter($value, S_0, $addr);
+		$sb->write_letter($value, scoreboard_interface::S_0, $addr);
 		break;
 	case 'I10':
 		if ($value > 1)
 		{
 			$value = 1;
 		}
-		// no break!		
+		// no break!
 	case 'H10':
 	case 'RH10':
 	case 'G10':
 	case 'RG10':
-		$sb->write_letter($value, S_1, $addr);
+		$sb->write_letter($value, scoreboard_interface::S_1, $addr);
 		break;
 	case 'blank':
 		$sb->blank_screen();
