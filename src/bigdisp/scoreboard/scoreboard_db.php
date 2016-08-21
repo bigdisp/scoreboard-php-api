@@ -5,31 +5,49 @@
  */
 namespace bigdisp\scoreboard;
 
-class scoreboard_file extends \bigdisp\scoreboard\scoreboard
+class scoreboard_db extends \bigdisp\scoreboard\scoreboard
 {
 	protected $game_id = '';
+	protected $line_home  = array();
+	protected $line_away = array();
 
-	/** @var string */
-	protected $file;
+	/** @var \gn36\db\driver\dbal_interface */
+	protected $db;
 
-	public function __construct($filename, $interface = INTERFACE_DAEMON, $host = 'localhost', $port = 44322)
+	public function __construct(\gn36\db\driver\dbal_interface $db, $interface = INTERFACE_DAEMON, $host = 'localhost', $port = 44322)
 	{
 		parent::__construct($interface, $host, $port);
-		$this->file = $filename;
-		if (file_exists($filename))
+		$this->db = $db;
+	}
+
+	function init($game_id = 0)
+	{
+		$this->game_id = $game_id;
+		$this->read_db();
+		//No gamedata present, let's have a look at the database
+		if (empty($this->line_guest) && $this->game_id)
 		{
-			$this->read_data();
+			$sql = 'SELECT * FROM linescore WHERE ' . $db->create_query(array('linescore_game_id' => $this->game_id), 'WHERE') . ' ORDER BY linescore_inning';
+			$result = $db->sql($sql);
+			$this->line_home = array();
+			$this->line_guest  = array();
+			while ($row = $db->fetchrow($result))
+			{
+				$this->line_home[$row['linescore_inning']]  = $row['linescore_hruns'];
+				$this->line_guest[$row['linescore_inning']] = $row['linescore_gruns'];
+			}
 		}
 	}
 
 	/**
 	 * Reads the basic scoreboard data from the database. Also reads linescores from the "normal" database if a game ID is set.
 	 */
-	function read_data()
+	function read_db()
 	{
-		$filedata = file_get_contents($this->file);
-		$data = unserialize($filedata);
-		foreach ($data as $row)
+		$db = $this->db;
+		$sql = 'SELECT * FROM scoreboard';
+		$result = $db->sql($sql);
+		while ($row = $db->fetchrow($result))
 		{
 			switch ($row['scoreboard_field'])
 			{
@@ -73,8 +91,14 @@ class scoreboard_file extends \bigdisp\scoreboard\scoreboard
 	/**
 	 * Store data of this class in db
 	 */
-	function store_data()
+	function store_db()
 	{
+		$db = $this->db;
+		$db->transaction();
+
+		$sql = 'DELETE FROM scoreboard';
+		$db->sql($sql);
+
 		$data = array(
 			array(
 				'scoreboard_field' => 'inning',
@@ -121,6 +145,7 @@ class scoreboard_file extends \bigdisp\scoreboard\scoreboard
 				'scoreboard_value' => $this->brightness,
 			),
 		);
-		file_put_contents($this->file, serialize($data));
+		$db->multi_insert('scoreboard', $data);
+		$db->transaction('commit');
 	}
 }

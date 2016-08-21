@@ -31,6 +31,9 @@ class scoreboard_interface
 		'I' => 0x12,
 		'I1' => 0x12,
 		'I10' => 0x12,
+		'IT' => 0x12,
+		'IB' => 0x12,
+
 		// Balls, Strikes, Outs
 		'BSO' => 0x13,
 		// all
@@ -135,7 +138,7 @@ class scoreboard_interface
 		$addr = $this->i2c_addr[$addr];
 		if ($hexval != -1)
 		{
-			if(strlen($hexval) > 4)
+			if (strlen($hexval) > 4)
 			{
 				$add = " w";
 			}
@@ -198,6 +201,28 @@ class scoreboard_interface
 		$this->pwm($g, $segment, scoreboard_interface::C_GREEN, $addr);
 	}
 
+	function set_bits($bits, $segment = scoreboard_interface::S_BOTH, $addr = 'broadcast')
+	{
+		if ($segment == scoreboard_interface::S_BOTH)
+		{
+			$this->set_bits($bits, scoreboard_interface::S_0, $addr);
+			$this->set_bits($bits, scoreboard_interface::S_1, $addr);
+			return;
+		}
+		$this->cmd($addr, 'bit_set_s' . $segment, $bits);
+	}
+
+	function clear_bits($bits, $segment = scoreboard_interface::S_BOTH, $addr = 'broadcast')
+	{
+		if ($segment == scoreboard_interface::S_BOTH)
+		{
+			$this->clear_bits($bits, scoreboard_interface::S_0, $addr);
+			$this->clear_bits($bits, scoreboard_interface::S_1, $addr);
+			return;
+		}
+		$this->cmd($addr, 'bit_clear_s' . $segment, $bits);
+	}
+
 	function write_number($number, $addr = 'broadcast')
 	{
 		$this->cmd($addr, 'print_num', $number);
@@ -220,6 +245,18 @@ class scoreboard_interface
 			return $this->write_letters($letter[0] . $letter[0], $addr);
 		}
 		$this->cmd($addr, ($segment == scoreboard_interface::S_0 ? 'first_digit' : 'second_digit'), ord($letter[0]));
+	}
+
+	function inning_top()
+	{
+		$this->set_bits($this->bitmask['IT'], $this->ports['IT'], 'IT');
+		$this->clear_bits($this->bitmask['IB'], $this->ports['IB'], 'IB');
+	}
+
+	function inning_bottom()
+	{
+		$this->set_bits($this->bitmask['IB'], $this->ports['IB'], 'IB');
+		$this->clear_bits($this->bitmask['IT'], $this->ports['IT'], 'IT');
 	}
 
 	function balls($num_balls)
@@ -305,6 +342,8 @@ $commands = array(
 	'I' => 2,
 	'I1' => 2,
 	'I10' => 2,
+	'IT' => 1,
+	'IB' => 1,
 
 	'blank' => 1,
 	'text' => 3,
@@ -334,7 +373,7 @@ switch ($argv[1])
 {
 	case 'color':
 		$target = $argv[2];
-		switch($argv[2])
+		switch ($argv[2])
 		{
 			case 'all':
 				$target = 'broadcast';
@@ -405,6 +444,12 @@ switch ($argv[1])
 	case 'RG10':
 		$sb->write_letter($value, scoreboard_interface::S_1, $addr);
 		break;
+	case 'IT':
+		$sb->inning_top();
+		break;
+	case 'IB':
+		$sb->inning_bottom();
+		break;
 	case 'blank':
 		$sb->blank_screen();
 	case 'text':
@@ -428,4 +473,3 @@ switch ($argv[1])
 		sleep(1);
 		$sb->blank_screen();
 }
-

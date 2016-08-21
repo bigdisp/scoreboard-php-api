@@ -1,5 +1,5 @@
 <?php
-
+include_once __DIR__ . '/../../src/bigdisp/scoreboard/scoreboard.php';
 
 class scoreboard_test extends hwcontrol_test
 {
@@ -108,8 +108,8 @@ class scoreboard_test extends hwcontrol_test
 
 		// TODO resultfile test split up to make it more readable
 		$this->assertResultfile("O 1\nB 1\nB 0\nS 0\nO 2\nO 1\nS 2\nB 0\nO 2\nS 0\n" .
-			"B 0\nS 0\npoint I1 0\npoint I10 1\nO 0\nO 2\n" . // Inning skip t -> b
-			"B 0\nS 0\npoint I1 1\npoint I10 0\nI1 2\nI10 0\nO 0\n" // Inning skip b -> t
+			"B 0\nS 0\nIB\nO 0\nO 2\n" . // Inning skip t -> b
+			"B 0\nS 0\nI 2\nIT\nO 0\n" // Inning skip b -> t
 			);
 	}
 
@@ -136,8 +136,8 @@ class scoreboard_test extends hwcontrol_test
 			'away' => 30,
 		), $hwcontrol->get_score());
 
-		$this->assertResultfile("RH1 2\nRH10 0\nRG1 3\nRG10 0\n" .
-			"RH1 0\nRH10 2\nRG1 0\nRG10 3\n");
+		$this->assertResultfile("RH 2\nRG 3\n" .
+			"RH 20\nRG 30\n");
 	}
 
 	/**

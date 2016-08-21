@@ -1,5 +1,5 @@
 <?php
-
+include_once __DIR__ . '/../../src/bigdisp/scoreboard/hwcontrol.php';
 
 class hwcontrol_test extends PHPUnit_Framework_TestCase
 {

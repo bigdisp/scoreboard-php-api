@@ -1,0 +1,4 @@
+phpcs:
+    standard: phpqa/code_sniffer/ruleset.xml
+phpmd:
+    standard: phpqa/messdetector/ruleset.xml

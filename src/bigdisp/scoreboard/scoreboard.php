@@ -121,8 +121,8 @@ class scoreboard extends hwcontrol
 			}
 			else
 			{
-				$this->set_inning_top();
 				$this->set_inning($this->inning + 1);
+				$this->set_inning_top();
 			}
 		}
 
@@ -203,16 +203,7 @@ class scoreboard extends hwcontrol
 		$this->runs_away = $away;
 		$this->runs_home = $home;
 
-		$rh10 = intval($home / 10);
-		$rh1  = intval($home % 10);
-		//$this->set_value("RH1", $rh1);
-		//$this->set_value("RH10", $rh10);
 		$this->set_value("RH", $home);
-
-		$rg10 = intval($away / 10);
-		$rg1  = intval($away % 10);
-		//$this->set_value("RG1", $rg1);
-		//$this->set_value("RG10", $rg10);
 		$this->set_value("RG", $away);
 	}
 
@@ -225,10 +216,6 @@ class scoreboard extends hwcontrol
 	{
 		$this->inning = $inning;
 
-		$i10 = intval($inning / 10);
-		$i1  = intval($inning % 10);
-		//$this->set_value("I1", $i1);
-		//$this->set_value("I10", $i10);
 		$this->set_value("I", $inning);
 	}
 
@@ -239,8 +226,7 @@ class scoreboard extends hwcontrol
 	{
 		$this->top = true;
 
-		$this->set_point("I1", true);
-		$this->set_point("I10", false);
+		$this->cmd('IT');
 	}
 
 	/**
@@ -250,8 +236,7 @@ class scoreboard extends hwcontrol
 	{
 		$this->top = false;
 
-		$this->set_point("I1", false);
-		$this->set_point("I10", true);
+		$this->cmd('IB');
 	}
 
 	/**
