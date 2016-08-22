@@ -103,7 +103,7 @@ if (isset($_POST['batter-out']))
 {
 	$scoreboard->batter_out();
 }
-if (isset($_POST['reset']) && isset($_POST['really-reset']) && $_POST['really-reset'])
+if ((isset($_POST['reset']) && isset($_POST['really-reset']) && $_POST['really-reset']) || (isset($_POST['shutdown']) && isset($_POST['really-shutdown']) && $_POST['really-shutdown']))
 {
 	file_put_contents($filename, '');
 	$scoreboard = new \bigdisp\scoreboard\scoreboard_file($filename);
@@ -204,7 +204,15 @@ if (isset($_POST['white']) && isset($_POST['really-white']) && $_POST['really-wh
 	$scoreboard->set_color('FFFFFF');
 }
 
+
 $scoreboard->store_data();
+
+if (isset($_POST['shutdown']) && isset($_POST['really-shutdown']) && $_POST['really-shutdown'])
+{
+	echo "The board will now shut down. Please wait at least 30 seconds before turning off the power to allow for the system to properly shut down.";
+	system('shutdown -h -P now');
+	die();
+}
 
 $colors = array(
 	'RH' 	=> $scoreboard->get_color('RH'),

@@ -134,9 +134,10 @@
 		</div>
 
 
-		<h3><span class="fa fa-fw fa-warning"></span> Reset</h3>
+		<h3><span class="fa fa-fw fa-warning"></span> Reset and Shutdown</h3>
 		<ul class="list-group">
 			<li class="list-group-item"><i class="fa fa-fw fa-warning"></i> <input type="submit" name="reset" class="btn btn-sm btn-danger" value="Reset whole scoreboard"> <input type="checkbox" name="really-reset" value="1"> I really wish to reset the board</li>
+			<li class="list-group-item"><i class="fa fa-fw fa-warning"></i> <input type="submit" name="shutdown" class="btn btn-sm btn-danger" value="Shutdown"> <input type="checkbox" name="really-shutdown" value="1"> I really wish to shut down the board</li>
 		</ul>
 		</form>
 		<div class="jumbotron">
