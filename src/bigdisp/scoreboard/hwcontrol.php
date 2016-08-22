@@ -24,7 +24,7 @@ class hwcontrol
 	protected $path = './scoreboard ';
 
 	/** @var int */
-	protected $brightness = -1;
+	protected $brightness = array('all' => '888888');
 
 	const INTERFACE_CONSOLE = 1;
 	const INTERFACE_DAEMON = 2;
@@ -85,18 +85,10 @@ class hwcontrol
 	}
 
 	/**
-	 * Set pwm brightness level (between 0 and 10).
-	 *
-	 * @param int $level
-	 */
-	public function pwm_level($level = 5)
-	{
-		$this->brightness = $level;
-		$this->cmd_pwm(intval($level));
-	}
-
-	/**
 	 * Set the color of a certain digit. If no digit is given, all colors are set.
+	 * Note that certain digits will be adjusted in conjunction due to hardware wiring.
+	 * For example, the two digits of the home and away runs will always be the same color.
+	 * The same goes for strikes and outs.
 	 *
 	 * Color can be any rgb hex value such as AB0976.
 	 *
@@ -108,11 +100,33 @@ class hwcontrol
 		if ($digit === null)
 		{
 			$this->cmd("color all $color");
+			$this->brightness = array('all' => $color);
 		}
 		else
 		{
 			$this->cmd("color $digit $color");
+			$this->brightness[$digit] = $color;
 		}
+	}
+
+	/**
+	 * Get the color that is set for a certain digit. Returns false if the color is unknown.
+	 *
+	 * Note: This function does not work correctly if pwm is turned off.
+	 *
+	 * @param string $digit
+	 */
+	public function get_color($digit)
+	{
+		if (isset($this->brightness[$digit]))
+		{
+			return $this->brightness[$digit];
+		}
+		if (isset($this->brightness['all']))
+		{
+			return $this->brightness['all'];
+		}
+		return '888888';
 	}
 
 	/**
