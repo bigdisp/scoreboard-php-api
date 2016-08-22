@@ -8,11 +8,11 @@
 	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-T8Gy5hrqNKT+hzMclPo118YTQO6cYprQmhrYwIiQ/3axmI1hQomh7Ud2hPOy8SP1" crossorigin="anonymous">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script> -->
-	<link rel="stylesheet" href="bootstrap-3.3.7-dist/css/bootstrap.min.css">
-	<link rel="stylesheet" href="bootstrap-3.3.7-dist/css/bootstrap-theme.min.css">
-	<link rel="stylesheet" href="font-awesome-4.6.3/css/font-awesome.min.css">
-	<script src="jquery-3.1.0.min.js"></script>
-	<script src="bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+	<link rel="stylesheet" href="<?=$offset ?>/example/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="<?=$offset ?>/example/bootstrap-3.3.7-dist/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="<?=$offset ?>/example/font-awesome-4.6.3/css/font-awesome.min.css">
+	<script src="<?=$offset ?>/example/jquery-3.1.0.min.js"></script>
+	<script src="<?=$offset ?>/example/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
 	
 </head>
 <body role="document">

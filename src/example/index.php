@@ -5,9 +5,10 @@
  * @copyright 2016 Martin Beckmann
  */
 
-include '../bigdisp/scoreboard/hwcontrol.php';
-include '../bigdisp/scoreboard/scoreboard.php';
-include '../bigdisp/scoreboard/scoreboard_file.php';
+$offset = '..';
+include "$offset/bigdisp/scoreboard/hwcontrol.php";
+include "$offset/bigdisp/scoreboard/scoreboard.php";
+include "$offset/bigdisp/scoreboard/scoreboard_file.php";
 
 $filename = 'scoreboard_data.txt';
 
@@ -39,17 +40,17 @@ if (isset($_POST['inning']))
 		else
 		{
 			$inning++;
-			$scoreboard->set_inning_top();
 			$scoreboard->set_inning($inning);
+			$scoreboard->set_inning_top();
 		}
 	}
 	else
 	{
 		if ($halfinning === 'top')
 		{
-			$scoreboard->set_inning_bottom();
 			$inning--;
 			$scoreboard->set_inning($inning);
+			$scoreboard->set_inning_bottom();
 		}
 		else
 		{
@@ -110,6 +111,8 @@ if (isset($_POST['reset']) && isset($_POST['really-reset']) && $_POST['really-re
 	$scoreboard->set_balls(0);
 	$scoreboard->set_strikes(0);
 	$scoreboard->set_outs(0);
+	$scoreboard->set_inning(1);
+	$scoreboard->set_inning_top();
 }
 
 $scoreboard->store_data();
@@ -126,4 +129,4 @@ $outs = $scoreboard->get_outs();
 
 $inning_list = $scoreboard->get_linescore();
 
-include "output.php";
+include "$offset/example/output.php";
