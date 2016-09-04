@@ -18,15 +18,15 @@ class scoreboard_interface
 	// Definitions
 	public $i2c_addr = array(
 		// Home
-		'H' => 0x10,
-		'RH' => 0x10,
-		'RH1' => 0x10,
-		'RH10' => 0x10,
+		'H' => 0x11,
+		'RH' => 0x11,
+		'RH1' => 0x11,
+		'RH10' => 0x11,
 		// Away
-		'G' => 0x11,
-		'RG' => 0x11,
-		'RG1' => 0x11,
-		'RG10' => 0x11,
+		'G' => 0x10,
+		'RG' => 0x10,
+		'RG1' => 0x10,
+		'RG10' => 0x10,
 		// Inning
 		'I' => 0x12,
 		'I1' => 0x12,
@@ -94,8 +94,8 @@ class scoreboard_interface
 
 		//Inning dots
 		// Don't wire these to B or C, otherwise innings >= 10 might cause problems
-		'IT' => 16, // Top
-		'IB' => 32, // Bottom
+		'IT' => 32, // Top
+		'IB' => 16, // Bottom
 	);
 
 	protected $ports = array(
