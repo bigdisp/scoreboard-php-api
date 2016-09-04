@@ -36,6 +36,10 @@ class scoreboard_interface
 
 		// Balls, Strikes, Outs
 		'BSO' => 0x13,
+		'B' => 0x13,
+		'S' => 0x13,
+		'O' => 0x13,
+
 		// all
 		'broadcast' => array(
 			'RH',
@@ -77,16 +81,16 @@ class scoreboard_interface
 
 		//Balls
 		'B1' => 1,
-		'B2' => 2,
-		'B3' => 4,
+		'B2' => 4,
+		'B3' => 16,
 
 		//Strikes
-		'S1' => 8,
-		'S2' => 16,
+		'S1' => 64,
+		'S2' => 4,
 
 		//Outs
-		'O1' => 32,
-		'O2' => 64,
+		'O1' => 1,
+		'O2' => 2,
 
 		//Inning dots
 		// Don't wire these to B or C, otherwise innings >= 10 might cause problems
@@ -95,11 +99,11 @@ class scoreboard_interface
 	);
 
 	protected $ports = array(
-		'B1' => 0,
-		'B2' => 0,
-		'B3' => 0,
+		'B1' => 1,
+		'B2' => 1,
+		'B3' => 1,
 
-		'S1' => 0,
+		'S1' => 1,
 		'S2' => 0,
 
 		'O1' => 0,
@@ -165,7 +169,7 @@ class scoreboard_interface
 		}
 		if (is_array($value) && $color == scoreboard_interface::C_REDBLUE)
 		{
-			$value = "0x" . dechex($value['r']) . dechex($value['b']);
+			$value = "0x" . dechex($value['b']) . dechex($value['r']);
 		}
 		else if (is_array($value) && $color == scoreboard_interface::C_GREEN)
 		{
@@ -195,7 +199,7 @@ class scoreboard_interface
 
 	function color($hexval, $segment = scoreboard_interface::S_BOTH, $addr = 'broadcast')
 	{
-		$rb = '0x' . $hexval[0] . $hexval[1] . $hexval[4] . $hexval[5];
+		$rb = '0x' . $hexval[4] . $hexval[5] . $hexval[0] . $hexval[1];
 		$this->pwm($rb, $segment, scoreboard_interface::C_REDBLUE, $addr);
 		$g  = '0x' . dechex(hexdec($hexval[2] . $hexval[3]) * 2);
 		$this->pwm($g, $segment, scoreboard_interface::C_GREEN, $addr);
@@ -382,21 +386,26 @@ switch ($argv[1])
 			case 'H':
 			case 'RG':
 			case 'G':
-			case 'I':
 			case 'BSO':
 				$sb->color($argv[3], scoreboard_interface::S_BOTH, $target);
 				break;
 
+			case 'I':
 			case 'H1':
 			case 'G1':
 			case 'I1':
 			case 'BSO0':
+			case 'S':
+			case 'O':
 				$sb->color($argv[3], scoreboard_interface::S_0, $target);
 				break;
 			case 'H10':
 			case 'G10':
 			case 'I10':
 			case 'BSO1':
+			case 'B':
+			case 'IT':
+			case 'IB':
 				$sb->color($argv[3], scoreboard_interface::S_1, $target);
 				break;
 		}
