@@ -66,7 +66,15 @@ No hardware is required. The tests replace the hardware access by simulations:
 * `tests/example/web_example_test.php`: simulates the complete chain
   HTTP POST -> `index.php` -> API -> `scoreboard` CLI -> `i2cset` for the
   buttons of the web interface (score, count, outs, inning, colors, reset,
-  refresh). Check out our travis build below:
+  refresh).
+* `tests/example/cli_protocol_test.php` and `tests/scoreboard/api_cli_compat_test.php`:
+  single digits, color encoding and whether every command of the API is
+  understood by the command line interface.
+
+Tests reported as incomplete with "Known bug: ..." document bugs that are not
+fixed yet; they don't fail the build, but fail once the bug is fixed so the
+marker gets removed. GitHub Actions (`.github/workflows/ci.yml`) runs the tests
+on PHP 7.4 to 8.4 for every push and pull request. The old travis build:
 
 master: [![Build Status](https://travis-ci.org/bigdisp/scoreboard-php-api.png?branch=master)](http://travis-ci.org/bigdisp/scoreboard-php-api)
 

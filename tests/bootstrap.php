@@ -30,3 +30,4 @@ if (!class_exists('PHPUnit_Framework_TestCase') && class_exists('\PHPUnit\Framew
 }
 
 require_once __DIR__ . '/test_helper.php';
+require_once __DIR__ . '/known_bug_trait.php';

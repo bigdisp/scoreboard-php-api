@@ -2,3 +2,4 @@ tests/log/*
 !tests/log/emptydir
 /vendor/
 .phpunit.result.cache
+/composer.lock
