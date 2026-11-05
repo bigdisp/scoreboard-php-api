@@ -15,6 +15,16 @@ class scoreboard_interface
 
 	protected $i2cset = '/usr/sbin/i2cset';
 
+	public function __construct()
+	{
+		// Allow replacing the i2cset binary, e.g. by a simulation for tests
+		$i2cset = getenv('SCOREBOARD_I2CSET');
+		if ($i2cset !== false && $i2cset !== '')
+		{
+			$this->i2cset = $i2cset;
+		}
+	}
+
 	// Definitions
 	public $i2c_addr = array(
 		// Home
@@ -359,7 +369,8 @@ if (!isset($argv[1]) || !isset($commands[$argv[1]]))
 	fwrite(STDERR, "ERROR: Unknown command: " . (isset($argv[1]) ? $argv[1] : '') . "\n");
 	exit(1);
 }
-if ($argc < $commands[$argv[1]])
+// $argc includes the script name, the table counts the command and its arguments
+if ($argc - 1 < $commands[$argv[1]])
 {
 	fwrite(STDERR, "ERROR: Too few arguments.\n");
 	exit(2);
