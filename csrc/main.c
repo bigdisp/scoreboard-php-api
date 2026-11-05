@@ -8,22 +8,28 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-int main()
+/* Use absolute paths: this program runs with root privileges (setuid), so PATH must not be trusted. */
+#define I2CSET "/usr/sbin/i2cset"
+#define SHUTDOWN "/sbin/shutdown"
+
+int main(void)
 {
 	/* Disable output */
-	system("i2cset -y 1 0x10 0x07 0x20");
-	system("i2cset -y 1 0x10 0x08 0x20");
+	system(I2CSET " -y 1 0x10 0x07 0x20");
+	system(I2CSET " -y 1 0x10 0x08 0x20");
 	
-	system("i2cset -y 1 0x11 0x07 0x20");
-	system("i2cset -y 1 0x11 0x08 0x20");
+	system(I2CSET " -y 1 0x11 0x07 0x20");
+	system(I2CSET " -y 1 0x11 0x08 0x20");
 
-	system("i2cset -y 1 0x12 0x07 0x20");
-	system("i2cset -y 1 0x12 0x08 0x20");
+	system(I2CSET " -y 1 0x12 0x07 0x20");
+	system(I2CSET " -y 1 0x12 0x08 0x20");
 
-	system("i2cset -y 1 0x13 0x07 0x20");
-	system("i2cset -y 1 0x13 0x08 0x20");
+	system(I2CSET " -y 1 0x13 0x07 0x20");
+	system(I2CSET " -y 1 0x13 0x08 0x20");
 
 	/* Shutdown */
-	system("shutdown -h -P now");
+	system(SHUTDOWN " -h -P now");
+
+	return 0;
 }
 

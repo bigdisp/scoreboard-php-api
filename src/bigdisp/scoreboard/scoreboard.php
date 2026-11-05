@@ -165,7 +165,7 @@ class scoreboard extends hwcontrol
 	 */
 	public function set_balls($balls)
 	{
-		$this->balls = intval($balls) % 4;
+		$this->balls = max(0, intval($balls)) % 4;
 		$this->set_value('B', $this->balls);
 	}
 
@@ -176,7 +176,7 @@ class scoreboard extends hwcontrol
 	 */
 	public function set_strikes($strikes)
 	{
-		$this->strikes = intval($strikes) % 3;
+		$this->strikes = max(0, intval($strikes)) % 3;
 		$this->set_value('S', $this->strikes);
 	}
 
@@ -187,7 +187,7 @@ class scoreboard extends hwcontrol
 	 */
 	public function set_outs($outs)
 	{
-		$this->outs = intval($outs) % 3;
+		$this->outs = max(0, intval($outs)) % 3;
 		$this->set_value('O', $this->outs);
 	}
 
@@ -200,11 +200,11 @@ class scoreboard extends hwcontrol
 	 */
 	public function set_score($home, $away)
 	{
-		$this->runs_away = $away;
-		$this->runs_home = $home;
+		$this->runs_away = intval($away);
+		$this->runs_home = intval($home);
 
-		$this->set_value("RH", $home);
-		$this->set_value("RG", $away);
+		$this->set_value("RH", $this->runs_home);
+		$this->set_value("RG", $this->runs_away);
 	}
 
 	/**
@@ -214,9 +214,9 @@ class scoreboard extends hwcontrol
 	 */
 	public function set_inning($inning)
 	{
-		$this->inning = $inning;
+		$this->inning = intval($inning);
 
-		$this->set_value("I", $inning);
+		$this->set_value("I", $this->inning);
 	}
 
 	/**
@@ -262,7 +262,7 @@ class scoreboard extends hwcontrol
 		{
 			$linescore[$inning] = array(
 				'home' => $home,
-				'away' => $this->line_away[$inning],
+				'away' => isset($this->line_away[$inning]) ? $this->line_away[$inning] : 0,
 				'inning' => $inning,
 			);
 		}

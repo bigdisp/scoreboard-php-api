@@ -23,13 +23,13 @@ class hwcontrol
 	/** @var string */
 	protected $path = './scoreboard ';
 
-	/** @var int */
+	/** @var array */
 	protected $brightness = array('all' => '888888');
 
 	const INTERFACE_CONSOLE = 1;
 	const INTERFACE_DAEMON = 2;
 
-	public function __construct($interface = INTERFACE_DAEMON, $host = 'localhost', $port = 44322)
+	public function __construct($interface = self::INTERFACE_DAEMON, $host = 'localhost', $port = 44322)
 	{
 		$this->interface = $interface;
 		$this->host = $host;
@@ -136,20 +136,22 @@ class hwcontrol
 	 */
 	protected function cmd($params)
 	{
-		if (is_array($params))
+		if (!is_array($params))
 		{
-			$params = implode(" ", $params);
+			$params = explode(' ', (string) $params);
 		}
-		//Todo: eigentlichen Befehl einsetzen
+		// Drop empty arguments (e.g. caused by double spaces)
+		$params = array_values(array_filter(array_map('strval', $params), 'strlen'));
 
-		echo $this->path . " " . $params;
 		if ($this->interface == hwcontrol::INTERFACE_CONSOLE)
 		{
-			system($this->path . ' ' . $params);
+			// Escape every argument, values may originate from user input
+			system(trim($this->path) . ' ' . implode(' ', array_map('escapeshellarg', $params)));
 		}
 		else
 		{
-			$resource = fsockopen($this->host, $this->port);
+			$params = implode(' ', $params);
+			$resource = @fsockopen($this->host, $this->port);
 			if ($resource)
 			{
 				fwrite($resource, $params);
@@ -165,11 +167,11 @@ class hwcontrol
 	 */
 	protected function cmd_pwm($params)
 	{
-		//Todo: eigentlichen Befehl einsetzen
-		if (is_array($params))
+		if (!is_array($params))
 		{
-			$params = implode(" ", $params);
+			$params = explode(' ', (string) $params);
 		}
-		$this->cmd("pwm $params");
+		array_unshift($params, 'pwm');
+		$this->cmd($params);
 	}
 }

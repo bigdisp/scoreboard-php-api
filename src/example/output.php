@@ -40,7 +40,7 @@
 				</thead>
 				<tbody>
 					<tr>
-						<td><?php echo (isset($team_away) ? $team_away : 'Guest'); ?>
+						<td><?php echo (isset($team_away) ? htmlspecialchars($team_away) : 'Guest'); ?>
 					<?php foreach ($inning_list as $inn_data)
 					{
 						?>
@@ -50,7 +50,7 @@
 					<td><?=$runs_away ?></td>
 					</tr>
 					<tr>
-						<td><?php echo (isset($team_home) ? $team_home : 'Home'); ?>
+						<td><?php echo (isset($team_home) ? htmlspecialchars($team_home) : 'Home'); ?>
 					<?php foreach ($inning_list as $inn_data)
 					{
 						?>
