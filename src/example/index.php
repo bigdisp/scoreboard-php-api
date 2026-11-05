@@ -79,7 +79,7 @@ if (isset($_POST['strikes']))
 	}
 	else
 	{
-		$scoreboard->set_strikes($count['strike'] - 1);
+		$scoreboard->set_strikes($count['strikes'] - 1);
 	}
 }
 if (isset($_POST['outs']))
@@ -106,7 +106,7 @@ if (isset($_POST['batter-out']))
 if ((isset($_POST['reset']) && isset($_POST['really-reset']) && $_POST['really-reset']) || (isset($_POST['shutdown']) && isset($_POST['really-shutdown']) && $_POST['really-shutdown']))
 {
 	file_put_contents($filename, '');
-	$scoreboard = new \bigdisp\scoreboard\scoreboard_file($filename);
+	$scoreboard = new \bigdisp\scoreboard\scoreboard_file($filename, \bigdisp\scoreboard\hwcontrol::INTERFACE_CONSOLE);
 	$scoreboard->set_score(0, 0);
 	$scoreboard->set_balls(0);
 	$scoreboard->set_strikes(0);
@@ -146,44 +146,50 @@ if (isset($_POST['save-colors']))
 	if (isset($_POST['color-rh']))
 	{
 		$matches = array();
-		preg_match('#[A-F0-9]{6}#i',$_POST['color-rh'], $matches);
-		$color_clean = $matches[0];
-		$scoreboard->set_color($color_clean, 'RH');
+		if (preg_match('#[A-F0-9]{6}#i', $_POST['color-rh'], $matches))
+		{
+			$scoreboard->set_color(strtoupper($matches[0]), 'RH');
+		}
 	}
 	if (isset($_POST['color-rg']))
 	{
 		$matches = array();
-		preg_match('#[A-F0-9]{6}#i',$_POST['color-rg'], $matches);
-		$color_clean = $matches[0];
-		$scoreboard->set_color($color_clean, 'RG');
+		if (preg_match('#[A-F0-9]{6}#i', $_POST['color-rg'], $matches))
+		{
+			$scoreboard->set_color(strtoupper($matches[0]), 'RG');
+		}
 	}
 	if (isset($_POST['color-i']))
 	{
 		$matches = array();
-		preg_match('#[A-F0-9]{6}#i',$_POST['color-i'], $matches);
-		$color_clean = $matches[0];
-		$scoreboard->set_color($color_clean, 'I');
+		if (preg_match('#[A-F0-9]{6}#i', $_POST['color-i'], $matches))
+		{
+			$scoreboard->set_color(strtoupper($matches[0]), 'I');
+		}
 	}
 	if (isset($_POST['color-it']))
 	{
 		$matches = array();
-		preg_match('#[A-F0-9]{6}#i',$_POST['color-it'], $matches);
-		$color_clean = $matches[0];
-		$scoreboard->set_color($color_clean, 'IT');
+		if (preg_match('#[A-F0-9]{6}#i', $_POST['color-it'], $matches))
+		{
+			$scoreboard->set_color(strtoupper($matches[0]), 'IT');
+		}
 	}
 	if (isset($_POST['color-b']))
 	{
 		$matches = array();
-		preg_match('#[A-F0-9]{6}#i',$_POST['color-b'], $matches);
-		$color_clean = $matches[0];
-		$scoreboard->set_color($color_clean, 'B');
+		if (preg_match('#[A-F0-9]{6}#i', $_POST['color-b'], $matches))
+		{
+			$scoreboard->set_color(strtoupper($matches[0]), 'B');
+		}
 	}
 	if (isset($_POST['color-s']))
 	{
 		$matches = array();
-		preg_match('#[A-F0-9]{6}#i',$_POST['color-s'], $matches);
-		$color_clean = $matches[0];
-		$scoreboard->set_color($color_clean, 'S');
+		if (preg_match('#[A-F0-9]{6}#i', $_POST['color-s'], $matches))
+		{
+			$scoreboard->set_color(strtoupper($matches[0]), 'S');
+		}
 	}
 }
 if (isset($_POST['reset-colors']) && isset($_POST['really-reset-colors']) && $_POST['really-reset-colors'])

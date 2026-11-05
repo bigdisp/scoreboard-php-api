@@ -12,7 +12,7 @@ class scoreboard_file extends \bigdisp\scoreboard\scoreboard
 	/** @var string */
 	protected $file;
 
-	public function __construct($filename, $interface = INTERFACE_DAEMON, $host = 'localhost', $port = 44322)
+	public function __construct($filename, $interface = self::INTERFACE_DAEMON, $host = 'localhost', $port = 44322)
 	{
 		parent::__construct($interface, $host, $port);
 		$this->file = $filename;
@@ -28,7 +28,12 @@ class scoreboard_file extends \bigdisp\scoreboard\scoreboard
 	function read_data()
 	{
 		$filedata = file_get_contents($this->file);
-		$data = unserialize($filedata);
+		$data = empty($filedata) ? false : unserialize($filedata);
+		if (!is_array($data))
+		{
+			// Empty (e.g. after reset) or corrupt file: keep defaults
+			return;
+		}
 		foreach ($data as $row)
 		{
 			switch ($row['scoreboard_field'])
@@ -64,7 +69,10 @@ class scoreboard_file extends \bigdisp\scoreboard\scoreboard
 					$this->line_away = empty($row['scoreboard_value'])? array() : unserialize($row['scoreboard_value']);
 					break;
 				case 'brightness':
-					$this->brightness = $row['scoreboard_value'];
+					if (is_array($row['scoreboard_value']))
+					{
+						$this->brightness = $row['scoreboard_value'];
+					}
 					break;
 			}
 		}

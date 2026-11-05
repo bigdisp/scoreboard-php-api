@@ -14,7 +14,7 @@ class scoreboard_db extends \bigdisp\scoreboard\scoreboard
 	/** @var \gn36\db\driver\dbal_interface */
 	protected $db;
 
-	public function __construct(\gn36\db\driver\dbal_interface $db, $interface = INTERFACE_DAEMON, $host = 'localhost', $port = 44322)
+	public function __construct(\gn36\db\driver\dbal_interface $db, $interface = self::INTERFACE_DAEMON, $host = 'localhost', $port = 44322)
 	{
 		parent::__construct($interface, $host, $port);
 		$this->db = $db;
@@ -25,16 +25,17 @@ class scoreboard_db extends \bigdisp\scoreboard\scoreboard
 		$this->game_id = $game_id;
 		$this->read_db();
 		//No gamedata present, let's have a look at the database
-		if (empty($this->line_guest) && $this->game_id)
+		if (empty($this->line_away) && $this->game_id)
 		{
+			$db = $this->db;
 			$sql = 'SELECT * FROM linescore WHERE ' . $db->create_query(array('linescore_game_id' => $this->game_id), 'WHERE') . ' ORDER BY linescore_inning';
 			$result = $db->sql($sql);
 			$this->line_home = array();
-			$this->line_guest  = array();
+			$this->line_away = array();
 			while ($row = $db->fetchrow($result))
 			{
-				$this->line_home[$row['linescore_inning']]  = $row['linescore_hruns'];
-				$this->line_guest[$row['linescore_inning']] = $row['linescore_gruns'];
+				$this->line_home[$row['linescore_inning']] = $row['linescore_hruns'];
+				$this->line_away[$row['linescore_inning']] = $row['linescore_gruns'];
 			}
 		}
 	}
@@ -82,10 +83,31 @@ class scoreboard_db extends \bigdisp\scoreboard\scoreboard
 					$this->line_away = empty($row['scoreboard_value'])? array() : unserialize($row['scoreboard_value']);
 					break;
 				case 'brightness':
-					$this->brightness = $row['scoreboard_value'];
+					$this->brightness = $this->unserialize_brightness($row['scoreboard_value']);
 					break;
 			}
 		}
+	}
+
+	/**
+	 * Restore the brightness (color) array from its database representation.
+	 *
+	 * @param string $value
+	 * @return array
+	 */
+	protected function unserialize_brightness($value)
+	{
+		$data = empty($value) ? false : @unserialize($value);
+		if (is_array($data))
+		{
+			return $data;
+		}
+		// Legacy entries contain a single color for all digits
+		if (preg_match('#^[A-F0-9]{6}$#i', (string) $value))
+		{
+			return array('all' => $value);
+		}
+		return array('all' => '888888');
 	}
 
 	/**
@@ -142,7 +164,7 @@ class scoreboard_db extends \bigdisp\scoreboard\scoreboard
 			),
 			array(
 				'scoreboard_field' => 'brightness',
-				'scoreboard_value' => $this->brightness,
+				'scoreboard_value' => serialize($this->brightness),
 			),
 		);
 		$db->multi_insert('scoreboard', $data);
